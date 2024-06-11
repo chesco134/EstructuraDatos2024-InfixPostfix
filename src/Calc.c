@@ -46,7 +46,7 @@ void stack_chunks(String* s, Pila* p);
 char* add_char_to_pointer(char* p, int count, char c);
 void add_dato(Pila* p, Dato* d);
 int deep_before_operand(Pila* p);
-int is_operand(char c);
+int is_operator(char c);
 int get_weight(char c);
 int compare(char c1, char c2);
 void add_dato_c(Pila* p, char c);
@@ -202,7 +202,7 @@ float operate(Pila* p)
 			printf("|");
 		cnt++;
 		printf("%s|", d->s->s);
-		if(is_operand(c) == 0 && d->s->length == 1)
+		if(is_operator(c) == 0 && d->s->length == 1)
 		{
 			primero = get_datof(nums);
 			segundo = get_datof(nums);
@@ -263,16 +263,20 @@ void stack_chunks(String* s, Pila* p)
 			{
 				if(count > 0)
 				{
+					/*
 					if('-' != ns[0] || ('-' == ns[0] && count > 1))
 					{
+					*/
 						s_ = string(ns, count);
 						ns = NULL;
 						count = 0;
 						d = create_dato(s_);
 						add_dato(p, d);
+					/*
 					}
 					else
 					{
+					
 						count++;
 						ns = add_char_to_pointer(ns, count, '1');
 						add_dato(p, create_dato(string(ns, count)));
@@ -293,11 +297,11 @@ void stack_chunks(String* s, Pila* p)
 								{
 									add_dato(p, d);
 									d = get_dato(operadores);
-									if(!d)
+									if(!d || d->s->s[0] == '(')
 										break;
 									resultado_comparacion = compare(mult, d->s->s[0]);
 								}
-								if(d)
+								if(d && d->s->s[0] != '(')
 								{
 									add_dato(operadores, d);
 								}
@@ -314,6 +318,7 @@ void stack_chunks(String* s, Pila* p)
 							add_dato_c(operadores, mult);
 						}
 					}
+					*/
 				}
 				add_dato_c(operadores, s->s[i]);
 			}
@@ -330,20 +335,18 @@ void stack_chunks(String* s, Pila* p)
 				// 4+5*(8-9/(8-1))-2
 				/* Begin taking elements from "la pila de operadores", until you find an opening parentheses. */
 				d = get_dato(operadores);
-				if(d && d->s->s[0] != '(')
+				while(d && d->s->s[0] != '(')
 				{
 					add_dato(p, d);
+					d = get_dato(operadores);
 				}
 			}
 			else
 			{
-				if(pc != '\0' && is_operand(pc) == 0 && s->s[i] == '-')
+				/*
+				if(pc != '\0' && is_operator(pc) == 0 && s->s[i] == '-')
 				{
-					count++;
-					ns = add_char_to_pointer(ns, count, s->s[i]);
-				}
-				else
-				{
+				*/
 					if(count > 0)
 					{
 						s_ = string(ns, count);
@@ -361,12 +364,12 @@ void stack_chunks(String* s, Pila* p)
 					if(d)
 					{
 						resultado_comparacion = compare(s->s[i], d->s->s[0]);
-						if(resultado_comparacion >= 2)
+						if(resultado_comparacion > 0)
 						{
 							add_dato(operadores, d);
 							add_dato_c(operadores, s->s[i]);
 						}
-						else if(resultado_comparacion <= 0)
+						else // if(resultado_comparacion <= 0)
 						{
 							while(resultado_comparacion <= 0)
 							{
@@ -382,17 +385,19 @@ void stack_chunks(String* s, Pila* p)
 							}
 							add_dato_c(operadores, s->s[i]);
 						}
+						/*
 						else if(resultado_comparacion == 1)
 						{
 							add_dato(operadores, d);
 							add_dato_c(operadores, s->s[i]);
 						}
+						*/
 					}
 					else
 					{
 						add_dato_c(operadores, s->s[i]);
 					}
-				}
+				//}
 			}
 		}
 		pc = s->s[i];
@@ -467,10 +472,10 @@ void add_dato_c(Pila* p, char c)
 	add_dato(p, d);
 }
 
-int is_operand(char c)
+int is_operator(char c)
 {
-	char operands[] = {'+', '-', '*', '/', '^', '(', ')'};
-	int res = char_in_valid_chars(c, operands);
+	char operators[] = {'+', '-', '*', '/', '^', '(', ')'};
+	int res = char_in_valid_chars(c, operators);
 	return res;
 }
 
@@ -613,7 +618,7 @@ int validate_decimal_numbers(String* s)
 
 int validate_syntax(String* s)
 {
-	if(s->s[0] == '.' || (is_operand(s->s[0]) == 0 && s->s[0] != '-' && s->s[0] != '('))
+	if(s->s[0] == '.' || (is_operator(s->s[0]) == 0 && s->s[0] != '-' && s->s[0] != '('))
 		return -1;
 	int mc = 0;
 	int i;
@@ -634,7 +639,7 @@ int validate_syntax(String* s)
 				return i;
 			mc = 0;
 		}
-		else if(is_operand(s->s[i]) == 0)
+		else if(is_operator(s->s[i]) == 0)
 		{
 			if(s->s[i] != '(' && s->s[i] != ')')
 			{
@@ -657,7 +662,7 @@ int validate_syntax(String* s)
 		}
 		pc = s->s[i];
 	}
-	if(( ')' != s->s[s->length - 1] && is_operand(s->s[s->length-1]) == 0) || s->s[s->length -1 ] == '.')
+	if(( ')' != s->s[s->length - 1] && is_operator(s->s[s->length-1]) == 0) || s->s[s->length -1 ] == '.')
 	{
 		return s->length-1;
 	}
