@@ -263,62 +263,11 @@ void stack_chunks(String* s, Pila* p)
 			{
 				if(count > 0)
 				{
-					/*
-					if('-' != ns[0] || ('-' == ns[0] && count > 1))
-					{
-					*/
-						s_ = string(ns, count);
-						ns = NULL;
-						count = 0;
-						d = create_dato(s_);
-						add_dato(p, d);
-					/*
-					}
-					else
-					{
-					
-						count++;
-						ns = add_char_to_pointer(ns, count, '1');
-						add_dato(p, create_dato(string(ns, count)));
-						ns = NULL;
-						count = 0;
-						d = get_dato(operadores);
-						if(d)
-						{
-							resultado_comparacion = compare(mult, d->s->s[0]);
-							if(resultado_comparacion == 3)
-							{
-								add_dato(operadores, d);
-								add_dato_c(operadores, mult);
-							}
-							else if(resultado_comparacion <= 0)
-							{
-								while(resultado_comparacion <= 0)
-								{
-									add_dato(p, d);
-									d = get_dato(operadores);
-									if(!d || d->s->s[0] == '(')
-										break;
-									resultado_comparacion = compare(mult, d->s->s[0]);
-								}
-								if(d && d->s->s[0] != '(')
-								{
-									add_dato(operadores, d);
-								}
-								add_dato_c(operadores, mult);
-							}
-							else if(resultado_comparacion == 1)
-							{
-								add_dato(operadores, d);
-								add_dato_c(operadores, mult);
-							}
-						}
-						else
-						{
-							add_dato_c(operadores, mult);
-						}
-					}
-					*/
+					s_ = string(ns, count);
+					ns = NULL;
+					count = 0;
+					d = create_dato(s_);
+					add_dato(p, d);
 				}
 				add_dato_c(operadores, s->s[i]);
 			}
@@ -343,61 +292,49 @@ void stack_chunks(String* s, Pila* p)
 			}
 			else
 			{
-				/*
-				if(pc != '\0' && is_operator(pc) == 0 && s->s[i] == '-')
+				if(count > 0)
 				{
-				*/
-					if(count > 0)
+					s_ = string(ns, count);
+					ns = NULL;
+					count = 0;
+					d = create_dato(s_);
+					add_dato(p, d);
+				}
+				/* Check priority */
+				// Suma y Resta tienen la misma prioridad.
+				// Multiplicación y División tienen la misma prioridad pero mayor que suma y resta.
+				// Exponencial es de "derecha a izquierda", tiene más prioridad que suma y resta.
+				// 5+3*2-18
+				d = get_dato(operadores);
+				if(d)
+				{
+					resultado_comparacion = compare(s->s[i], d->s->s[0]);
+					if(resultado_comparacion > 0)
 					{
-						s_ = string(ns, count);
-						ns = NULL;
-						count = 0;
-						d = create_dato(s_);
-						add_dato(p, d);
-					}
-					/* Check priority */
-					// Suma y Resta tienen la misma prioridad.
-					// Multiplicación y División tienen la misma prioridad pero mayor que suma y resta.
-					// Exponencial es de "derecha a izquierda", tiene más prioridad que suma y resta.
-					// 5+3*2-18
-					d = get_dato(operadores);
-					if(d)
-					{
-						resultado_comparacion = compare(s->s[i], d->s->s[0]);
-						if(resultado_comparacion > 0)
-						{
-							add_dato(operadores, d);
-							add_dato_c(operadores, s->s[i]);
-						}
-						else // if(resultado_comparacion <= 0)
-						{
-							while(resultado_comparacion <= 0)
-							{
-								add_dato(p, d);
-								d = get_dato(operadores);
-								if(!d)
-									break;
-								resultado_comparacion = compare(s->s[i], d->s->s[0]);
-							}
-							if(d)
-							{
-								add_dato(operadores, d);
-							}
-							add_dato_c(operadores, s->s[i]);
-						}
-						/*
-						else if(resultado_comparacion == 1)
-						{
-							add_dato(operadores, d);
-							add_dato_c(operadores, s->s[i]);
-						}
-						*/
+						add_dato(operadores, d);
+						add_dato_c(operadores, s->s[i]);
 					}
 					else
 					{
+						while(resultado_comparacion <= 0)
+						{
+							add_dato(p, d);
+							d = get_dato(operadores);
+							if(!d)
+								break;
+							resultado_comparacion = compare(s->s[i], d->s->s[0]);
+						}
+						if(d)
+						{
+							add_dato(operadores, d);
+						}
 						add_dato_c(operadores, s->s[i]);
 					}
-				//}
+				}
+				else
+				{
+					add_dato_c(operadores, s->s[i]);
+				}
 			}
 		}
 		pc = s->s[i];
